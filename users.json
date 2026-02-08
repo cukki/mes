@@ -1,0 +1,16 @@
+[
+    {
+        "user_id": "USR001",
+        "name": "Dexter Morgan",
+        "employee_number": "0001",
+        "qr_code": "Dexter Morgan 0001",
+        "language": "hu"
+    },
+    {
+        "user_id": "USR002",
+        "name": "James Doakes",
+        "employee_number": "0002",
+        "qr_code": "James Doakes 0002",
+        "language": "hu"
+    }
+]

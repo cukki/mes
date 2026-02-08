@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MES Light v3.1</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- LOGIN SCREEN -->
+        <div id="login-screen" class="screen active">
+            <div class="header">
+                <select class="lang-selector" id="langSelector">
+                    <option value="hu">🇭🇺 HU</option>
+                    <option value="en">🇬🇧 EN</option>
+                    <option value="de">🇩🇪 DE</option>
+                    <option value="tl">🇵🇭 TL</option>
+                </select>
+                <h1 data-i18n="app_title">MES Munkaidő Nyilvántartó</h1>
+                <div class="subtitle" data-i18n="app_subtitle">Szita Művelet Követés</div>
+            </div>
+            <div class="login-content">
+                <div class="login-icon">👤</div>
+                <h2 data-i18n="login_title">Bejelentkezés</h2>
+                <p data-i18n="login_desc">Olvasd be a QR kódot a belépéshez</p>
+                <button class="btn-primary" id="loginScanBtn">
+                    <span data-i18n="login_scan_text">📷 QR Kód Beolvasása</span>
+                </button>
+                <div id="reader"></div>
+            </div>
+        </div>
+
+        <!-- RESUME PROMPT SCREEN -->
+        <div id="resume-screen" class="screen">
+            <div class="header">
+                <h1 data-i18n="resume_title">Megszakított munka</h1>
+            </div>
+            <div class="content">
+                <div class="status-box warning">
+                    <div class="status-icon">⚠️</div>
+                    <h3 data-i18n="resume_found">Megszakított munka található!</h3>
+                </div>
+                <div class="info-card">
+                    <div class="label" data-i18n="auftrag_label">Megrendelés</div>
+                    <div class="value" id="resumeAuftragValue">-</div>
+                    <div class="label" data-i18n="resume_rows_label">Rögzített párosítások</div>
+                    <div class="value" id="resumeRowsValue">-</div>
+                    <div class="label" data-i18n="resume_elapsed_label">Eltelt idő</div>
+                    <div class="value" id="resumeElapsedValue">-</div>
+                </div>
+                <button class="btn-success" id="resumeYesBtn">
+                    <span data-i18n="resume_yes">▶️ Folytatás</span>
+                </button>
+                <button class="btn-secondary" id="resumeNoBtn">
+                    <span data-i18n="resume_no">✖ Új munkával kezdés</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- MAIN SCREEN -->
+        <div id="main-screen" class="screen">
+            <div class="header">
+                <select class="lang-selector" id="langSelectorMain">
+                    <option value="hu">🇭🇺 HU</option>
+                    <option value="en">🇬🇧 EN</option>
+                    <option value="de">🇩🇪 DE</option>
+                    <option value="tl">🇵🇭 TL</option>
+                </select>
+                <h1 data-i18n="main_title">MES App</h1>
+                <div class="user-info">
+                    <div>
+                        <div class="name" id="userName">-</div>
+                        <div class="number" id="userNumber">-</div>
+                    </div>
+                    <button class="logout-btn" id="logoutBtn">
+                        <span data-i18n="logout_text">Kilépés</span>
+                    </button>
+                </div>
+            </div>
+            <div class="content">
+                <div class="timer-display">
+                    <div class="label" data-i18n="timer_label">Munka idő</div>
+                    <div class="time" id="workTimer">00:00:00</div>
+                </div>
+
+                <div class="info-card" id="auftragCard" style="display: none;">
+                    <div class="label" data-i18n="auftrag_label">Megrendelés</div>
+                    <div class="value" id="auftragValue">-</div>
+                </div>
+
+                <button class="btn-primary" id="scanAuftragBtn">
+                    <span data-i18n="scan_auftrag_text">📋 Megrendelés Beolvasása</span>
+                </button>
+                <button class="btn-warning" id="pauseBtn" style="display: none;">
+                    <span data-i18n="pause_text">⏸️ Szünet</span>
+                </button>
+                <button class="btn-info" id="shiftChangeBtn" style="display: none;">
+                    <span data-i18n="shift_change_text">🔄 Műszakváltás</span>
+                </button>
+                <button class="btn-danger" id="finishAuftragBtn" style="display: none;">
+                    <span data-i18n="finish_auftrag_text">✅ Megrendelés Lezárása</span>
+                </button>
+
+                <div id="readerMain"></div>
+            </div>
+        </div>
+
+        <!-- OPERATION SCREEN (2-step flow: Operation → Paint → Operation → ...) -->
+        <div id="operation-screen" class="screen">
+            <div class="header">
+                <h1 data-i18n="operation_title">Művelet Nyilvántartás</h1>
+                <div class="user-info">
+                    <div>
+                        <div class="name" id="userName2">-</div>
+                    </div>
+                    <button class="logout-btn" id="backToMainBtn">
+                        <span data-i18n="back_text">← Vissza</span>
+                    </button>
+                </div>
+            </div>
+            <div class="content">
+                <!-- Current state info card -->
+                <div class="info-card">
+                    <div class="label" data-i18n="op_auftrag_label">Megrendelés</div>
+                    <div class="value" id="opAuftragValue">-</div>
+                    <div class="label" data-i18n="op_operation_label">Művelet</div>
+                    <div class="value" id="opOperationValue">-</div>
+                </div>
+
+                <!-- Dynamic status indicator -->
+                <div class="status-box info" id="operationStatus">
+                    <div class="status-icon">📷</div>
+                    <h3 data-i18n="op_status_scan_op">Művelet beolvasása</h3>
+                    <p data-i18n="op_status_scan_op_desc">Olvasd be a művelet Code128 vonalkódját</p>
+                </div>
+
+                <!-- Completed pairs list -->
+                <div id="rowListContainer" style="display: none;">
+                    <h3 style="margin-bottom: 15px;" data-i18n="row_list_title">Rögzített párosítások:</h3>
+                    <div class="paint-list" id="rowList"></div>
+                </div>
+
+                <!-- Context-dependent scan button -->
+                <button class="btn-primary" id="scanStepBtn">
+                    <span id="scanStepBtnText" data-i18n="scan_op_text">📷 Művelet Beolvasása</span>
+                </button>
+                <button class="btn-success" id="finishAllBtn" style="display: none;">
+                    <span data-i18n="finish_all_text">✅ Összes Lezárása</span>
+                </button>
+                <button class="btn-warning" id="interruptBtn" style="display: none;">
+                    <span data-i18n="interrupt_text">⏹️ Megszakítás</span>
+                </button>
+
+                <div id="readerOperation"></div>
+            </div>
+        </div>
+
+        <!-- PAUSE TYPE SELECT SCREEN -->
+        <div id="pause-select-screen" class="screen">
+            <div class="header">
+                <h1 data-i18n="pause_select_title">Szünet típusa</h1>
+            </div>
+            <div class="content">
+                <p style="text-align: center; color: #666; margin-bottom: 30px;" data-i18n="pause_select_desc">
+                    Válassz a szünet típusok közül:
+                </p>
+                <div class="pause-types">
+                    <button class="pause-type-btn" data-type="étkezés">
+                        <div class="icon">🍽️</div>
+                        <div class="text" data-i18n="pause_type_eating">Étkezési szünet</div>
+                    </button>
+                    <button class="pause-type-btn" data-type="festék">
+                        <div class="icon">🎨</div>
+                        <div class="text" data-i18n="pause_type_paint">Festékre várakozás</div>
+                    </button>
+                    <button class="pause-type-btn" data-type="anyag">
+                        <div class="icon">📦</div>
+                        <div class="text" data-i18n="pause_type_material">Anyagra várakozás</div>
+                    </button>
+                    <button class="pause-type-btn" data-type="mérés">
+                        <div class="icon">📏</div>
+                        <div class="text" data-i18n="pause_type_measure">Mérésre várakozás</div>
+                    </button>
+                </div>
+                <button class="btn-secondary" id="cancelPauseSelect">
+                    <span data-i18n="cancel_text">Mégse</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- PAUSE ACTIVE SCREEN -->
+        <div id="pause-active-screen" class="screen">
+            <div class="header">
+                <h1 data-i18n="pause_active_title">Szünet aktív</h1>
+            </div>
+            <div class="content">
+                <div class="status-box warning">
+                    <div class="status-icon">⏸️</div>
+                    <h3 id="pause-type-display">Étkezési szünet</h3>
+                </div>
+                <div class="timer-display" style="background: #FF9500;">
+                    <div class="label" data-i18n="pause_timer_label">Szünet ideje</div>
+                    <div class="time" id="pauseTimer">00:00:00</div>
+                </div>
+                <button class="btn-success" id="endPauseBtn">
+                    <span data-i18n="end_pause_text">▶️ Szünet Vége</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- SHIFT CHANGE SCREEN -->
+        <div id="shift-change-screen" class="screen">
+            <div class="header">
+                <h1 data-i18n="shift_change_title">Műszakváltás</h1>
+            </div>
+            <div class="content">
+                <div class="status-box info">
+                    <div class="status-icon">🔄</div>
+                    <h3 data-i18n="shift_change_desc">Új operátor beolvasása</h3>
+                    <p data-i18n="shift_change_info">A munka nem áll meg, csak az operátor vált.</p>
+                </div>
+                <div class="info-card">
+                    <div class="label" data-i18n="shift_current_operator">Jelenlegi operátor</div>
+                    <div class="value" id="shiftCurrentOperator">-</div>
+                </div>
+                <button class="btn-primary" id="shiftScanBtn">
+                    <span data-i18n="shift_scan_text">📷 Új Operátor QR Beolvasása</span>
+                </button>
+                <button class="btn-secondary" id="cancelShiftChange">
+                    <span data-i18n="cancel_text">Mégse</span>
+                </button>
+                <div id="readerShift"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "",
+            authDomain: "timemonitoring-ku.firebaseapp.com",
+            projectId: "timemonitoring-ku",
+            storageBucket: "timemonitoring-ku.firebasestorage.app",
+            messagingSenderId: "1085277232669",
+            appId: "1:1085277232669:web:27500d6651d66ba12e30f4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.addDoc = addDoc;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.query = query;
+        window.where = where;
+        window.updateDoc = updateDoc;
+        window.doc = doc;
+    </script>
+
+    <script>
+        // ==============================
+        // TRANSLATIONS
+        // ==============================
+        const translations = {
+            hu: {
+                app_title: "MES Munkaidő Nyilvántartó", app_subtitle: "Szita Művelet Követés",
+                login_title: "Bejelentkezés", login_desc: "Olvasd be a QR kódot a belépéshez",
+                login_scan_text: "📷 QR Kód Beolvasása", main_title: "MES App",
+                logout_text: "Kilépés", timer_label: "Munka idő", auftrag_label: "Megrendelés",
+                scan_auftrag_text: "📋 Megrendelés Beolvasása", pause_text: "⏸️ Szünet",
+                finish_auftrag_text: "✅ Megrendelés Lezárása", operation_title: "Művelet Nyilvántartás",
+                back_text: "← Vissza", op_auftrag_label: "Megrendelés", op_operation_label: "Művelet",
+                op_status_scan_op: "Művelet beolvasása",
+                op_status_scan_op_desc: "Olvasd be a művelet Code128 vonalkódját",
+                op_status_scan_paint: "Festék beolvasása",
+                op_status_scan_paint_desc: "Olvasd be a festék QR kódját",
+                op_status_pair_done: "Párosítás rögzítve!",
+                scan_op_text: "📷 Művelet Beolvasása",
+                scan_paint_text: "🎨 Festék Beolvasása",
+                row_list_title: "Rögzített párosítások:",
+                finish_all_text: "✅ Összes Lezárása",
+                interrupt_text: "⏹️ Megszakítás",
+                alert_finish_all: "Összes párosítás lezárása és mentése?",
+                alert_all_saved: "Összes párosítás lezárva és mentve!",
+                alert_no_rows: "Még nincs rögzített párosítás!",
+                alert_interrupt_confirm: "Munka megszakítása?\nKésőbb folytathatod ezen a gépen.",
+                alert_interrupted: "Munka megszakítva és mentve!",
+                alert_invalid_operation: "Hibás művelet kód formátum!",
+                alert_operation_no_number: "A művelet kód utolsó 3 karaktere nem szám!",
+                alert_invalid_paint: "Hibás festék QR kód formátum!",
+                alert_paint_expired: "Festék lejárt! (2+ év)", alert_paint_warning: "Festék hamarosan lejár! (1.5-2 év)",
+                alert_continue_pairing: "Folytatod a párosítást?",
+                alert_unknown_user: "Ismeretlen felhasználó!",
+                alert_logout_confirm: "Biztosan kijelentkezel?",
+                alert_save_error: "Mentési hiba!",
+                alert_finish_auftrag: "Megrendelés lezárása?", alert_auftrag_finished: "Megrendelés lezárva!",
+                alert_pause_ended: "Szünet befejezve! Időtartam:", alert_camera_error: "Kamera hiba!",
+                pause_select_title: "Szünet típusa", pause_select_desc: "Válassz a szünet típusok közül:",
+                pause_type_eating: "Étkezési szünet", pause_type_paint: "Festékre várakozás",
+                pause_type_material: "Anyagra várakozás", pause_type_measure: "Mérésre várakozás",
+                cancel_text: "Mégse", pause_active_title: "Szünet aktív",
+                pause_timer_label: "Szünet ideje", end_pause_text: "▶️ Szünet Vége",
+                resume_title: "Megszakított munka", resume_found: "Megszakított munka található!",
+                resume_rows_label: "Rögzített párosítások", resume_elapsed_label: "Eltelt idő",
+                resume_yes: "▶️ Folytatás", resume_no: "✖ Új munkával kezdés",
+                shift_change_text: "🔄 Műszakváltás", shift_change_title: "Műszakváltás",
+                shift_change_desc: "Új operátor beolvasása",
+                shift_change_info: "A munka nem áll meg, csak az operátor vált.",
+                shift_current_operator: "Jelenlegi operátor",
+                shift_scan_text: "📷 Új Operátor QR Beolvasása",
+                alert_shift_changed: "Műszakváltás sikeres! Új operátor:",
+                alert_shift_same_user: "Ez ugyanaz a felhasználó!"
+            },
+            en: {
+                app_title: "MES Time Tracking", app_subtitle: "Screen Operation Tracking",
+                login_title: "Login", login_desc: "Scan your QR code to log in",
+                login_scan_text: "📷 Scan QR Code", main_title: "MES App",
+                logout_text: "Logout", timer_label: "Work time", auftrag_label: "Order",
+                scan_auftrag_text: "📋 Scan Order", pause_text: "⏸️ Pause",
+                finish_auftrag_text: "✅ Finish Order", operation_title: "Operation Tracking",
+                back_text: "← Back", op_auftrag_label: "Order", op_operation_label: "Operation",
+                op_status_scan_op: "Scan operation",
+                op_status_scan_op_desc: "Scan the Code128 barcode of the operation",
+                op_status_scan_paint: "Scan paint",
+                op_status_scan_paint_desc: "Scan the paint QR code",
+                op_status_pair_done: "Pair recorded!",
+                scan_op_text: "📷 Scan Operation",
+                scan_paint_text: "🎨 Scan Paint",
+                row_list_title: "Recorded pairs:",
+                finish_all_text: "✅ Finish All",
+                interrupt_text: "⏹️ Interrupt",
+                alert_finish_all: "Finish and save all pairs?",
+                alert_all_saved: "All pairs finished and saved!",
+                alert_no_rows: "No pairs recorded yet!",
+                alert_interrupt_confirm: "Interrupt work?\nYou can resume later on this machine.",
+                alert_interrupted: "Work interrupted and saved!",
+                alert_invalid_operation: "Invalid operation code format!",
+                alert_operation_no_number: "Last 3 characters must be numbers!",
+                alert_invalid_paint: "Invalid paint QR code format!",
+                alert_paint_expired: "Paint expired! (2+ years)", alert_paint_warning: "Paint expiring soon! (1.5-2 years)",
+                alert_continue_pairing: "Continue pairing?",
+                alert_unknown_user: "Unknown user!",
+                alert_logout_confirm: "Are you sure you want to log out?",
+                alert_save_error: "Save error!",
+                alert_finish_auftrag: "Finish order?", alert_auftrag_finished: "Order finished!",
+                alert_pause_ended: "Pause ended! Duration:", alert_camera_error: "Camera error!",
+                pause_select_title: "Pause type", pause_select_desc: "Choose pause type:",
+                pause_type_eating: "Meal break", pause_type_paint: "Waiting for paint",
+                pause_type_material: "Waiting for material", pause_type_measure: "Waiting for measurement",
+                cancel_text: "Cancel", pause_active_title: "Pause active",
+                pause_timer_label: "Pause duration", end_pause_text: "▶️ End Pause",
+                resume_title: "Interrupted work", resume_found: "Interrupted work found!",
+                resume_rows_label: "Recorded pairs", resume_elapsed_label: "Elapsed time",
+                resume_yes: "▶️ Resume", resume_no: "✖ Start new work",
+                shift_change_text: "🔄 Shift Change", shift_change_title: "Shift Change",
+                shift_change_desc: "Scan new operator",
+                shift_change_info: "Work continues, only the operator changes.",
+                shift_current_operator: "Current operator",
+                shift_scan_text: "📷 Scan New Operator QR",
+                alert_shift_changed: "Shift change successful! New operator:",
+                alert_shift_same_user: "This is the same user!"
+            },
+            de: {
+                app_title: "MES Zeiterfassung", app_subtitle: "Siebdruck-Vorgangserfassung",
+                login_title: "Anmeldung", login_desc: "Scannen Sie Ihren QR-Code",
+                login_scan_text: "📷 QR-Code scannen", main_title: "MES App",
+                logout_text: "Abmelden", timer_label: "Arbeitszeit", auftrag_label: "Auftrag",
+                scan_auftrag_text: "📋 Auftrag scannen", pause_text: "⏸️ Pause",
+                finish_auftrag_text: "✅ Auftrag abschließen", operation_title: "Vorgangserfassung",
+                back_text: "← Zurück", op_auftrag_label: "Auftrag", op_operation_label: "Vorgang",
+                op_status_scan_op: "Vorgang scannen",
+                op_status_scan_op_desc: "Scannen Sie den Code128-Barcode des Vorgangs",
+                op_status_scan_paint: "Farbe scannen",
+                op_status_scan_paint_desc: "Scannen Sie den Farb-QR-Code",
+                op_status_pair_done: "Zuordnung erfasst!",
+                scan_op_text: "📷 Vorgang scannen",
+                scan_paint_text: "🎨 Farbe scannen",
+                row_list_title: "Erfasste Zuordnungen:",
+                finish_all_text: "✅ Alle abschließen",
+                interrupt_text: "⏹️ Unterbrechen",
+                alert_finish_all: "Alle Zuordnungen abschließen und speichern?",
+                alert_all_saved: "Alle Zuordnungen abgeschlossen und gespeichert!",
+                alert_no_rows: "Noch keine Zuordnungen erfasst!",
+                alert_interrupt_confirm: "Arbeit unterbrechen?\nSie können später an dieser Maschine fortfahren.",
+                alert_interrupted: "Arbeit unterbrochen und gespeichert!",
+                alert_invalid_operation: "Ungültiges Vorgangsformat!",
+                alert_operation_no_number: "Letzte 3 Zeichen müssen Zahlen sein!",
+                alert_invalid_paint: "Ungültiger Farb-QR-Code!",
+                alert_paint_expired: "Farbe abgelaufen! (2+ Jahre)", alert_paint_warning: "Farbe läuft bald ab! (1.5-2 Jahre)",
+                alert_continue_pairing: "Zuordnung fortsetzen?",
+                alert_unknown_user: "Unbekannter Benutzer!",
+                alert_logout_confirm: "Möchten Sie sich abmelden?",
+                alert_save_error: "Speicherfehler!",
+                alert_finish_auftrag: "Auftrag abschließen?", alert_auftrag_finished: "Auftrag abgeschlossen!",
+                alert_pause_ended: "Pause beendet! Dauer:", alert_camera_error: "Kamerafehler!",
+                pause_select_title: "Pausentyp", pause_select_desc: "Wählen Sie einen Pausentyp:",
+                pause_type_eating: "Essenspause", pause_type_paint: "Warten auf Farbe",
+                pause_type_material: "Warten auf Material", pause_type_measure: "Warten auf Messung",
+                cancel_text: "Abbrechen", pause_active_title: "Pause aktiv",
+                pause_timer_label: "Pausendauer", end_pause_text: "▶️ Pause beenden",
+                resume_title: "Unterbrochene Arbeit", resume_found: "Unterbrochene Arbeit gefunden!",
+                resume_rows_label: "Erfasste Zuordnungen", resume_elapsed_label: "Verstrichene Zeit",
+                resume_yes: "▶️ Fortsetzen", resume_no: "✖ Neue Arbeit beginnen",
+                shift_change_text: "🔄 Schichtwechsel", shift_change_title: "Schichtwechsel",
+                shift_change_desc: "Neuen Bediener scannen",
+                shift_change_info: "Arbeit läuft weiter, nur der Bediener wechselt.",
+                shift_current_operator: "Aktueller Bediener",
+                shift_scan_text: "📷 Neuen Bediener QR scannen",
+                alert_shift_changed: "Schichtwechsel erfolgreich! Neuer Bediener:",
+                alert_shift_same_user: "Das ist derselbe Benutzer!"
+            },
+            tl: {
+                app_title: "MES Subaybay ng Oras", app_subtitle: "Subaybay ng Operasyon",
+                login_title: "Mag-login", login_desc: "I-scan ang QR code",
+                login_scan_text: "📷 I-scan ang QR Code", main_title: "MES App",
+                logout_text: "Mag-logout", timer_label: "Oras ng trabaho", auftrag_label: "Order",
+                scan_auftrag_text: "📋 I-scan ang Order", pause_text: "⏸️ Pahinga",
+                finish_auftrag_text: "✅ Tapusin ang Order", operation_title: "Subaybay ng Operasyon",
+                back_text: "← Bumalik", op_auftrag_label: "Order", op_operation_label: "Operasyon",
+                op_status_scan_op: "I-scan ang operasyon",
+                op_status_scan_op_desc: "I-scan ang Code128 barcode ng operasyon",
+                op_status_scan_paint: "I-scan ang pintura",
+                op_status_scan_paint_desc: "I-scan ang QR code ng pintura",
+                op_status_pair_done: "Pair naitala!",
+                scan_op_text: "📷 I-scan ang Operasyon",
+                scan_paint_text: "🎨 I-scan ang Pintura",
+                row_list_title: "Mga naitala:",
+                finish_all_text: "✅ Tapusin Lahat",
+                interrupt_text: "⏹️ I-interrupt",
+                alert_finish_all: "Tapusin at i-save lahat?",
+                alert_all_saved: "Lahat natapos at na-save!",
+                alert_no_rows: "Wala pang naitala!",
+                alert_interrupt_confirm: "I-interrupt ang trabaho?\nMaaari mong ipagpatuloy mamaya.",
+                alert_interrupted: "Trabaho na-interrupt at na-save!",
+                alert_invalid_operation: "Hindi wastong format!",
+                alert_operation_no_number: "Huling 3 ay dapat numero!",
+                alert_invalid_paint: "Hindi wastong QR code!",
+                alert_paint_expired: "Expired na! (2+ taon)", alert_paint_warning: "Malapit mag-expire! (1.5-2 taon)",
+                alert_continue_pairing: "Ipagpatuloy?",
+                alert_unknown_user: "Hindi kilalang user!",
+                alert_logout_confirm: "Sigurado ka ba?",
+                alert_save_error: "May error!",
+                alert_finish_auftrag: "Tapusin ang order?", alert_auftrag_finished: "Tapos na!",
+                alert_pause_ended: "Tapos na ang pahinga! Tagal:", alert_camera_error: "May error sa camera!",
+                pause_select_title: "Uri ng pahinga", pause_select_desc: "Pumili ng uri:",
+                pause_type_eating: "Oras ng kain", pause_type_paint: "Naghihintay ng pintura",
+                pause_type_material: "Naghihintay ng materyales", pause_type_measure: "Naghihintay ng sukat",
+                cancel_text: "Kanselahin", pause_active_title: "Aktibong pahinga",
+                pause_timer_label: "Tagal ng pahinga", end_pause_text: "▶️ Tapusin",
+                resume_title: "Na-interrupt na trabaho", resume_found: "May na-interrupt na trabaho!",
+                resume_rows_label: "Mga naitala", resume_elapsed_label: "Oras na lumipas",
+                resume_yes: "▶️ Ipagpatuloy", resume_no: "✖ Bagong trabaho",
+                shift_change_text: "🔄 Palit ng shift", shift_change_title: "Palit ng shift",
+                shift_change_desc: "I-scan ang bagong operator",
+                shift_change_info: "Tuloy ang trabaho, operator lang ang magbabago.",
+                shift_current_operator: "Kasalukuyang operator",
+                shift_scan_text: "📷 I-scan ang Bagong Operator QR",
+                alert_shift_changed: "Matagumpay! Bagong operator:",
+                alert_shift_same_user: "Pareho lang ang user!"
+            }
+        };
+
+        // ==============================
+        // DEVICE CONFIG FROM URL
+        // ==============================
+        function getDeviceFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const machine = urlParams.get('machine');
+            if (machine) { localStorage.setItem('machine_id', machine); return machine; }
+            return localStorage.getItem('machine_id') || null;
+        }
+
+        let MACHINE_ID = null;
+
+async function initApp() {
+    MACHINE_ID = getDeviceFromURL();
+    if (!MACHINE_ID) {
+        alert('⚠️ Gép nincs beállítva!');
+        return;
+    }
+    await loadUsers();
+    checkSession();
+}
+
+        window.addEventListener('DOMContentLoaded', initApp);
+
+        // ==============================
+        // UTILS
+        // ==============================
+        function t(key) { return translations[currentLanguage][key] || key; }
+
+        function updateLanguage() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                el.textContent = t(el.getAttribute('data-i18n'));
+            });
+            document.getElementById('langSelector').value = currentLanguage;
+            const lsm = document.getElementById('langSelectorMain');
+            if (lsm) lsm.value = currentLanguage;
+            updateScanButton();
+        }
+
+        function formatSeconds(sec) {
+            const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+            return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        // ==============================
+        // VARIABLES
+        // ==============================
+        let html5QrCode = null, isScanning = false, currentUser = null;
+        let currentLanguage = localStorage.getItem('language') || 'hu';
+        let workStartTime = null, timerInterval = null, elapsedBeforeResume = 0;
+        let currentAuftrag = null;
+        let pauseStartTime = null, pauseType = null, pauseInterval = null;
+        let resumeDocId = null;
+        let operators = [];
+
+        // === 2-STEP STATE MACHINE ===
+        // States: SCAN_OPERATION → SCAN_PAINT → (pair done) → SCAN_OPERATION → ...
+        let stepState = 'SCAN_OPERATION';
+        let currentOpData = null;
+        let printRows = []; // completed: [ {operation, paint, recorded_at}, ... ]
+        let operationPauses = [];
+
+let USERS = [];
+
+async function loadUsers() {
+    try {
+        const res = await fetch('https://raw.githubusercontent.com/cukki/mes/main/users.json');
+        USERS = await res.json();
+        console.log('👥 Users loaded:', USERS.length);
+    } catch (err) {
+        console.error('Error loading users:', err);
+        USERS = [];
+    }
+}
+
+        // ==============================
+        // SESSION
+        // ==============================
+        function checkSession() {
+            const saved = localStorage.getItem('currentUser');
+            if (saved) {
+                currentUser = JSON.parse(saved);
+                currentLanguage = localStorage.getItem('language') || 'hu';
+                updateLanguage();
+                updateUserInfo();
+                checkInterruptedWork();
+            } else {
+                updateLanguage();
+            }
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function updateUserInfo() {
+            if (!currentUser) return;
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userName2').textContent = currentUser.name;
+            document.getElementById('userNumber').textContent = currentUser.employee_number;
+        }
+
+        // ==============================
+        // CHECK INTERRUPTED WORK
+        // ==============================
+        async function checkInterruptedWork() {
+            try {
+                const q = window.query(
+                    window.collection(window.db, 'operations'),
+                    window.where('machine_id', '==', MACHINE_ID),
+                    window.where('status', '==', 0)
+                );
+                const snapshot = await window.getDocs(q);
+                if (!snapshot.empty) {
+                    let latestDoc = null, latestTime = null;
+                    snapshot.forEach(docSnap => {
+                        const data = docSnap.data();
+                        const ts = data.interrupted_at || data.start_time;
+                        if (!latestTime || ts > latestTime) {
+                            latestTime = ts;
+                            latestDoc = { id: docSnap.id, ...data };
+                        }
+                    });
+                    if (latestDoc) { showResumePrompt(latestDoc); return; }
+                }
+            } catch (err) { console.error('Error checking interrupted work:', err); }
+            showScreen('main-screen');
+        }
+
+        function showResumePrompt(docData) {
+            document.getElementById('resumeAuftragValue').textContent = docData.auftrag_id || '-';
+            const rows = docData.print_rows || [];
+            document.getElementById('resumeRowsValue').textContent = rows.length + ' db';
+            document.getElementById('resumeElapsedValue').textContent = formatSeconds(docData.elapsed_seconds || 0);
+            window._resumeData = docData;
+            showScreen('resume-screen');
+        }
+
+        document.getElementById('resumeYesBtn').addEventListener('click', () => {
+            const data = window._resumeData;
+            if (!data) { showScreen('main-screen'); return; }
+
+            resumeDocId = data.id;
+            currentAuftrag = data.auftrag_id;
+            printRows = data.print_rows || [];
+            operators = data.operators || [];
+            operationPauses = data.pauses || [];
+            addOperatorEntry();
+
+            // Show main with auftrag
+            document.getElementById('auftragCard').style.display = 'block';
+            document.getElementById('auftragValue').textContent = currentAuftrag;
+            document.getElementById('pauseBtn').style.display = 'block';
+            document.getElementById('shiftChangeBtn').style.display = 'block';
+            document.getElementById('finishAuftragBtn').style.display = 'block';
+
+            // Resume timer
+            elapsedBeforeResume = (data.elapsed_seconds || 0) * 1000;
+            workStartTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+
+            // Go to operation screen
+            document.getElementById('opAuftragValue').textContent = currentAuftrag;
+            stepState = 'SCAN_OPERATION';
+            currentOpData = null;
+            updateOperationUI();
+
+            if (printRows.length > 0) renderRowList();
+
+            showScreen('operation-screen');
+            window._resumeData = null;
+        });
+
+        document.getElementById('resumeNoBtn').addEventListener('click', () => {
+            window._resumeData = null;
+            showScreen('main-screen');
+        });
+
+        // ==============================
+        // OPERATOR TRACKING
+        // ==============================
+        function addOperatorEntry() {
+            operators.push({
+                user_id: currentUser.user_id, name: currentUser.name,
+                started_at: new Date().toISOString(), ended_at: null
+            });
+        }
+
+        function closeCurrentOperatorEntry() {
+            for (let i = operators.length - 1; i >= 0; i--) {
+                if (!operators[i].ended_at) { operators[i].ended_at = new Date().toISOString(); break; }
+            }
+        }
+
+        // ==============================
+        // SCANNER
+        // ==============================
+        async function startScanner(elId, onSuccess) {
+            if (isScanning) return;
+            try {
+                isScanning = true;
+                const el = document.getElementById(elId);
+                el.classList.add('active');
+                html5QrCode = new Html5Qrcode(elId);
+                await html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    (txt) => {
+                        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                        html5QrCode.stop().then(() => {
+                            html5QrCode.clear();
+                            el.classList.remove('active');
+                            isScanning = false;
+                            onSuccess(txt);
+                        });
+                    }
+                );
+            } catch (err) { alert(t('alert_camera_error')); isScanning = false; }
+        }
+
+        // ==============================
+        // LOGIN
+        // ==============================
+        document.getElementById('loginScanBtn').addEventListener('click', () => {
+            startScanner('reader', (qr) => {
+                const user = USERS.find(u => u.qr_code === qr);
+                if (user) {
+                    currentUser = user;
+                    currentLanguage = user.language;
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    localStorage.setItem('language', user.language);
+                    updateUserInfo();
+                    updateLanguage();
+                    checkInterruptedWork();
+                } else { alert(t('alert_unknown_user')); }
+            });
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (confirm(t('alert_logout_confirm'))) {
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('language');
+                currentUser = null; currentAuftrag = null;
+                printRows = []; operators = []; resumeDocId = null;
+                clearInterval(timerInterval);
+                location.reload();
+            }
+        });
+
+        // ==============================
+        // LANG CHANGE
+        // ==============================
+        document.getElementById('langSelector').addEventListener('change', (e) => {
+            currentLanguage = e.target.value;
+            localStorage.setItem('language', currentLanguage);
+            updateLanguage();
+        });
+        document.getElementById('langSelectorMain').addEventListener('change', (e) => {
+            currentLanguage = e.target.value;
+            localStorage.setItem('language', currentLanguage);
+            updateLanguage();
+        });
+
+        // ==============================
+        // TIMER
+        // ==============================
+        function startWorkTimer() {
+            workStartTime = Date.now();
+            elapsedBeforeResume = 0;
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            if (!workStartTime) return;
+            const e = (Date.now() - workStartTime) + elapsedBeforeResume;
+            document.getElementById('workTimer').textContent = formatSeconds(Math.floor(e / 1000));
+        }
+
+        function getCurrentElapsedSeconds() {
+            if (!workStartTime) return Math.round(elapsedBeforeResume / 1000);
+            return Math.round(((Date.now() - workStartTime) + elapsedBeforeResume) / 1000);
+        }
+
+        // ==============================
+        // AUFTRAG
+        // ==============================
+        document.getElementById('scanAuftragBtn').addEventListener('click', () => {
+            startScanner('readerMain', (qr) => {
+                currentAuftrag = qr.trim();
+                document.getElementById('auftragCard').style.display = 'block';
+                document.getElementById('auftragValue').textContent = currentAuftrag;
+                document.getElementById('pauseBtn').style.display = 'block';
+                document.getElementById('shiftChangeBtn').style.display = 'block';
+                document.getElementById('finishAuftragBtn').style.display = 'block';
+
+                operators = [];
+                addOperatorEntry();
+                printRows = [];
+                resumeDocId = null;
+
+                startWorkTimer();
+
+                // Go to operation screen
+                stepState = 'SCAN_OPERATION';
+                currentOpData = null;
+                document.getElementById('opAuftragValue').textContent = currentAuftrag;
+                document.getElementById('opOperationValue').textContent = '-';
+                updateOperationUI();
+                showScreen('operation-screen');
+            });
+        });
+
+        document.getElementById('finishAuftragBtn').addEventListener('click', () => {
+            if (!confirm(t('alert_finish_auftrag'))) return;
+            clearInterval(timerInterval);
+            closeCurrentOperatorEntry();
+            alert(t('alert_auftrag_finished'));
+            resetMainScreen();
+        });
+
+        function resetMainScreen() {
+            currentAuftrag = null; printRows = []; operators = [];
+            operationPauses = [];
+            resumeDocId = null; elapsedBeforeResume = 0;
+            stepState = 'SCAN_OPERATION'; currentOpData = null;
+            document.getElementById('auftragCard').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'none';
+            document.getElementById('shiftChangeBtn').style.display = 'none';
+            document.getElementById('finishAuftragBtn').style.display = 'none';
+            document.getElementById('workTimer').textContent = '00:00:00';
+        }
+
+        // ==============================
+        // OPERATION SCREEN - 2-STEP FLOW
+        // ==============================
+
+        function updateOperationUI() {
+            const statusEl = document.getElementById('operationStatus');
+            const btnText = document.getElementById('scanStepBtnText');
+            const finishBtn = document.getElementById('finishAllBtn');
+            const interruptBtn = document.getElementById('interruptBtn');
+
+            if (stepState === 'SCAN_OPERATION') {
+                statusEl.innerHTML = `<div class="status-icon">📷</div><h3>${t('op_status_scan_op')}</h3><p>${t('op_status_scan_op_desc')}</p>`;
+                statusEl.className = 'status-box info';
+                btnText.textContent = t('scan_op_text');
+                btnText.removeAttribute('data-i18n');
+                document.getElementById('opOperationValue').textContent = '-';
+            } else if (stepState === 'SCAN_PAINT') {
+                statusEl.innerHTML = `<div class="status-icon">🎨</div><h3>${t('op_status_scan_paint')}</h3><p>${t('op_status_scan_paint_desc')}</p>`;
+                statusEl.className = 'status-box info';
+                btnText.textContent = t('scan_paint_text');
+                btnText.removeAttribute('data-i18n');
+            }
+
+            // Show finish button only when in SCAN_OPERATION state (no half-pair) and has rows
+            const hasRows = printRows.length > 0;
+            finishBtn.style.display = (hasRows && stepState === 'SCAN_OPERATION') ? 'block' : 'none';
+            interruptBtn.style.display = hasRows ? 'block' : 'none';
+        }
+
+        function updateScanButton() {
+            const btnText = document.getElementById('scanStepBtnText');
+            if (!btnText) return;
+            if (stepState === 'SCAN_OPERATION') btnText.textContent = t('scan_op_text');
+            else if (stepState === 'SCAN_PAINT') btnText.textContent = t('scan_paint_text');
+        }
+
+        // Main scan button - context dependent
+        document.getElementById('scanStepBtn').addEventListener('click', () => {
+            startScanner('readerOperation', (code) => {
+                if (stepState === 'SCAN_OPERATION') handleOperationScan(code);
+                else if (stepState === 'SCAN_PAINT') handlePaintScan(code);
+            });
+        });
+
+        // STEP 1: Operation scan
+        function handleOperationScan(code) {
+            const trimmed = code.trim();
+            if (trimmed.length < 3) { alert(t('alert_invalid_operation')); return; }
+            const seq = parseInt(trimmed.slice(-3));
+            if (isNaN(seq)) { alert(t('alert_operation_no_number')); return; }
+
+            currentOpData = {
+                operation_code: trimmed,
+                operation_number: trimmed.slice(0, -3),
+                operation_seq: seq
+            };
+            document.getElementById('opOperationValue').textContent = `${currentOpData.operation_number}-${seq}`;
+            stepState = 'SCAN_PAINT';
+            updateOperationUI();
+        }
+
+        // STEP 2: Paint scan → completes the pair
+        function handlePaintScan(code) {
+            const p = code.trim().split('|');
+            if (p.length < 5) { alert(t('alert_invalid_paint')); return; }
+
+            const age = (new Date() - new Date(p[2])) / (1000 * 60 * 60 * 24 * 365);
+            let st = 'ok', msg = '';
+            if (age >= 2) { st = 'expired'; msg = t('alert_paint_expired'); }
+            else if (age >= 1.5) { st = 'warning'; msg = t('alert_paint_warning'); }
+            if (st !== 'ok' && !confirm(msg + '\n\n' + t('alert_continue_pairing'))) return;
+
+            const paintData = {
+                paint_id: p[0], mixed_by: p[1], mixed_date: p[2], color: p[3], series: p[4],
+                expired_status: st, expired_message: msg, age_years: age.toFixed(1)
+            };
+
+            // Complete this pair
+            printRows.push({
+                operation: { ...currentOpData },
+                paint: paintData,
+                recorded_at: new Date().toISOString()
+            });
+
+            // Show success briefly
+            const statusEl = document.getElementById('operationStatus');
+            statusEl.innerHTML = `<div class="status-icon">✅</div><h3>${t('op_status_pair_done')}</h3><p>${currentOpData.operation_number}-${currentOpData.operation_seq} → ${paintData.paint_id}</p>`;
+            statusEl.className = 'status-box success';
+
+            renderRowList();
+
+            // Reset for next pair
+            currentOpData = null;
+            stepState = 'SCAN_OPERATION';
+
+            // Delay UI update so user sees the success
+            setTimeout(() => { updateOperationUI(); }, 1500);
+        }
+
+        // Render completed pairs list
+        function renderRowList() {
+            const container = document.getElementById('rowListContainer');
+            const list = document.getElementById('rowList');
+            container.style.display = 'block';
+            list.innerHTML = '';
+
+            printRows.forEach((row, idx) => {
+                const d = document.createElement('div');
+                const paintSt = row.paint.expired_status || 'ok';
+                d.className = `paint-item ${paintSt}`;
+                const tm = new Date(row.recorded_at).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
+
+                let badge = '';
+                if (paintSt !== 'ok') {
+                    badge = `<div class="warning-badge ${paintSt}">${row.paint.expired_message}</div>`;
+                }
+
+                d.innerHTML = `
+                    <div class="header" style="background:none;color:#333;padding:0;">
+                        <div class="paint-id">#${idx + 1} — ${row.operation.operation_number}-${row.operation.operation_seq}</div>
+                        <div class="time">${tm}</div>
+                    </div>
+                    <div class="details">
+                        <strong>Művelet kód:</strong> ${row.operation.operation_code}<br>
+                        <strong>Festék:</strong> ${row.paint.paint_id} — ${row.paint.color} (${row.paint.series})<br>
+                        Keverte: ${row.paint.mixed_by} | ${row.paint.mixed_date} (${row.paint.age_years} év)
+                    </div>
+                    ${badge}
+                `;
+                list.appendChild(d);
+            });
+        }
+
+        // ==============================
+        // FINISH ALL (status: 1)
+        // ==============================
+        document.getElementById('finishAllBtn').addEventListener('click', async () => {
+            if (printRows.length === 0) { alert(t('alert_no_rows')); return; }
+            if (!confirm(t('alert_finish_all'))) return;
+
+            closeCurrentOperatorEntry();
+            const elapsed = getCurrentElapsedSeconds();
+
+            try {
+                if (resumeDocId) {
+                    await window.updateDoc(
+                        window.doc(window.db, 'operations', resumeDocId),
+                        {
+                            status: 1,
+                            print_rows: printRows,
+                            pauses: operationPauses,
+                            operators: operators,
+                            end_time: new Date().toISOString(),
+                            elapsed_seconds: elapsed,
+                            interrupted_at: null
+                        }
+                    );
+                } else {
+                    await window.addDoc(window.collection(window.db, 'operations'), {
+                        machine_id: MACHINE_ID,
+                        user_id: currentUser.user_id,
+                        user_name: currentUser.name,
+                        auftrag_id: currentAuftrag,
+                        print_rows: printRows,
+                        pauses: operationPauses,
+                        operators: operators,
+                        start_time: new Date().toISOString(),
+                        end_time: new Date().toISOString(),
+                        elapsed_seconds: elapsed,
+                        status: 1
+                    });
+                }
+                alert(t('alert_all_saved'));
+            } catch (err) {
+                console.error('Save error:', err);
+                alert(t('alert_save_error'));
+            }
+
+            resetOperationScreen();
+            showScreen('main-screen');
+        });
+
+        // ==============================
+        // INTERRUPT (status: 0)
+        // ==============================
+        document.getElementById('interruptBtn').addEventListener('click', async () => {
+            if (!confirm(t('alert_interrupt_confirm'))) return;
+
+            closeCurrentOperatorEntry();
+            const elapsed = getCurrentElapsedSeconds();
+
+            try {
+                if (resumeDocId) {
+                    await window.updateDoc(
+                        window.doc(window.db, 'operations', resumeDocId),
+                        {
+                            status: 0,
+                            print_rows: printRows,
+                            pauses: operationPauses,
+                            operators: operators,
+                            interrupted_at: new Date().toISOString(),
+                            elapsed_seconds: elapsed
+                        }
+                    );
+                } else {
+                    await window.addDoc(window.collection(window.db, 'operations'), {
+                        machine_id: MACHINE_ID,
+                        user_id: currentUser.user_id,
+                        user_name: currentUser.name,
+                        auftrag_id: currentAuftrag,
+                        print_rows: printRows,
+                        pauses: operationPauses,
+                        operators: operators,
+                        start_time: new Date().toISOString(),
+                        interrupted_at: new Date().toISOString(),
+                        elapsed_seconds: elapsed,
+                        status: 0
+                    });
+                }
+                alert(t('alert_interrupted'));
+            } catch (err) {
+                console.error('Interrupt save error:', err);
+                alert(t('alert_save_error'));
+            }
+
+            resetOperationScreen();
+            clearInterval(timerInterval);
+            resetMainScreen();
+            showScreen('main-screen');
+        });
+
+        function resetOperationScreen() {
+            printRows = [];
+            operationPauses = [];
+            stepState = 'SCAN_OPERATION';
+            currentOpData = null;
+            resumeDocId = null;
+            document.getElementById('rowListContainer').style.display = 'none';
+            document.getElementById('finishAllBtn').style.display = 'none';
+            document.getElementById('interruptBtn').style.display = 'none';
+            document.getElementById('opAuftragValue').textContent = '-';
+            document.getElementById('opOperationValue').textContent = '-';
+        }
+
+        document.getElementById('backToMainBtn').addEventListener('click', () => showScreen('main-screen'));
+
+        // ==============================
+        // PAUSE
+        // ==============================
+        document.getElementById('pauseBtn').addEventListener('click', () => showScreen('pause-select-screen'));
+
+        document.querySelectorAll('.pause-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                pauseType = btn.dataset.type;
+                pauseStartTime = Date.now();
+                pauseInterval = setInterval(() => {
+                    const e = Date.now() - pauseStartTime;
+                    document.getElementById('pauseTimer').textContent = formatSeconds(Math.floor(e / 1000));
+                }, 1000);
+                document.getElementById('pause-type-display').textContent = btn.querySelector('.text').textContent;
+                showScreen('pause-active-screen');
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            });
+        });
+
+        document.getElementById('cancelPauseSelect').addEventListener('click', () => showScreen('main-screen'));
+
+        document.getElementById('endPauseBtn').addEventListener('click', () => {
+            const dur = Math.round((Date.now() - pauseStartTime) / 1000);
+            clearInterval(pauseInterval);
+
+            operationPauses.push({
+                pause_type: pauseType,
+                user_name: currentUser.name,
+                start_time: new Date(pauseStartTime).toISOString(),
+                end_time: new Date().toISOString(),
+                duration: dur
+            });
+
+            elapsedBeforeResume = (Date.now() - workStartTime) + elapsedBeforeResume - (dur * 1000);
+            workStartTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+
+            showScreen('main-screen');
+            const h = Math.floor(dur / 3600), m = Math.floor((dur % 3600) / 60), s = dur % 60;
+            alert(`${t('alert_pause_ended')} ${h}ó ${m}p ${s}s`);
+        });
+
+        // ==============================
+        // SHIFT CHANGE
+        // ==============================
+        document.getElementById('shiftChangeBtn').addEventListener('click', () => {
+            document.getElementById('shiftCurrentOperator').textContent = currentUser.name;
+            showScreen('shift-change-screen');
+        });
+
+        document.getElementById('cancelShiftChange').addEventListener('click', () => showScreen('main-screen'));
+
+        document.getElementById('shiftScanBtn').addEventListener('click', () => {
+            startScanner('readerShift', (qr) => {
+                const newUser = USERS.find(u => u.qr_code === qr);
+                if (!newUser) { alert(t('alert_unknown_user')); return; }
+                if (newUser.user_id === currentUser.user_id) { alert(t('alert_shift_same_user')); return; }
+
+                closeCurrentOperatorEntry();
+                currentUser = newUser;
+                currentLanguage = newUser.language;
+                localStorage.setItem('currentUser', JSON.stringify(newUser));
+                localStorage.setItem('language', newUser.language);
+                addOperatorEntry();
+                updateUserInfo();
+                updateLanguage();
+
+                alert(t('alert_shift_changed') + ' ' + newUser.name);
+                showScreen('main-screen');
+            });
+        });
+    </script>
+</body>
+</html>
