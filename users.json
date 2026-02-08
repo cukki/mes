@@ -1,0 +1,16 @@
+[
+    {
+        "user_id": "USR001",
+        "name": "Ragó Attila",
+        "employee_number": "7939",
+        "qr_code": "Ragó Attila 7939",
+        "language": "hu"
+    },
+    {
+        "user_id": "USR002",
+        "name": "Varga Zoltán",
+        "employee_number": "7935",
+        "qr_code": "Varga Zoltan 7935",
+        "language": "hu"
+    }
+]
