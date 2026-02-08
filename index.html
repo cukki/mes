@@ -481,15 +481,15 @@
 
         let MACHINE_ID = null;
 
-        function initApp() {
-            MACHINE_ID = getDeviceFromURL();
-            if (!MACHINE_ID) {
-                alert('⚠️ Gép nincs beállítva! Nyisd meg a helyes URL-t (pl. ?machine=SPS_Cylinder)');
-                return;
-            }
-            console.log('🚀 Machine ID:', MACHINE_ID);
-            checkSession();
-        }
+async function initApp() {
+    MACHINE_ID = getDeviceFromURL();
+    if (!MACHINE_ID) {
+        alert('⚠️ Gép nincs beállítva!');
+        return;
+    }
+    await loadUsers();
+    checkSession();
+}
 
         window.addEventListener('DOMContentLoaded', initApp);
 
