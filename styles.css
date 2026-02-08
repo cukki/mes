@@ -72,6 +72,16 @@
             cursor: pointer;
             backdrop-filter: blur(10px);
         }
+#reader, #readerMain, #readerOperation, #readerShift {
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    display: none;
+}
+
+#reader.active, #readerMain.active, #readerOperation.active, #readerShift.active {
+    display: block;
+}
 
         .user-info {
             display: flex;
@@ -138,7 +148,10 @@
             transition: all 0.3s;
             margin-bottom: 15px;
         }
-
+.btn-info {
+    background: #5AC8FA;
+    color: white;
+}
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
