@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MES Light v3.0</title>
+    <title>MES Light v3.1</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,7 +48,7 @@
                 <div class="info-card">
                     <div class="label" data-i18n="auftrag_label">Megrendelés</div>
                     <div class="value" id="resumeAuftragValue">-</div>
-                    <div class="label" data-i18n="resume_rows_label">Rögzített sorok</div>
+                    <div class="label" data-i18n="resume_rows_label">Rögzített párosítások</div>
                     <div class="value" id="resumeRowsValue">-</div>
                     <div class="label" data-i18n="resume_elapsed_label">Eltelt idő</div>
                     <div class="value" id="resumeElapsedValue">-</div>
@@ -110,7 +110,7 @@
             </div>
         </div>
 
-        <!-- OPERATION SCREEN (new 3-step flow: Row → Operation → Paint) -->
+        <!-- OPERATION SCREEN (2-step flow: Operation → Paint → Operation → ...) -->
         <div id="operation-screen" class="screen">
             <div class="header">
                 <h1 data-i18n="operation_title">Művelet Nyilvántartás</h1>
@@ -135,19 +135,19 @@
                 <!-- Dynamic status indicator -->
                 <div class="status-box info" id="operationStatus">
                     <div class="status-icon">📷</div>
-                    <h3 data-i18n="op_status_scan_row">Nyomtatási sor beolvasása</h3>
-                    <p data-i18n="op_status_scan_row_desc">Olvasd be a nyomtatási sor Code128 vonalkódját</p>
+                    <h3 data-i18n="op_status_scan_op">Művelet beolvasása</h3>
+                    <p data-i18n="op_status_scan_op_desc">Olvasd be a művelet Code128 vonalkódját</p>
                 </div>
 
-                <!-- Completed rows list -->
+                <!-- Completed pairs list -->
                 <div id="rowListContainer" style="display: none;">
-                    <h3 style="margin-bottom: 15px;" data-i18n="row_list_title">Rögzített sorok:</h3>
+                    <h3 style="margin-bottom: 15px;" data-i18n="row_list_title">Rögzített párosítások:</h3>
                     <div class="paint-list" id="rowList"></div>
                 </div>
 
                 <!-- Context-dependent scan button -->
                 <button class="btn-primary" id="scanStepBtn">
-                    <span id="scanStepBtnText" data-i18n="scan_row_text">🖨️ Nyomtatási Sor Beolvasása</span>
+                    <span id="scanStepBtnText" data-i18n="scan_op_text">📷 Művelet Beolvasása</span>
                 </button>
                 <button class="btn-success" id="finishAllBtn" style="display: none;">
                     <span data-i18n="finish_all_text">✅ Összes Lezárása</span>
@@ -279,55 +279,39 @@
                 scan_auftrag_text: "📋 Megrendelés Beolvasása", pause_text: "⏸️ Szünet",
                 finish_auftrag_text: "✅ Megrendelés Lezárása", operation_title: "Művelet Nyilvántartás",
                 back_text: "← Vissza", op_auftrag_label: "Megrendelés", op_operation_label: "Művelet",
-                op_row_label: "Nyomtatási sor",
-                // 3-step status messages
-                op_status_scan_row: "Nyomtatási sor beolvasása",
-                op_status_scan_row_desc: "Olvasd be a nyomtatási sor Code128 vonalkódját",
                 op_status_scan_op: "Művelet beolvasása",
                 op_status_scan_op_desc: "Olvasd be a művelet Code128 vonalkódját",
                 op_status_scan_paint: "Festék beolvasása",
                 op_status_scan_paint_desc: "Olvasd be a festék QR kódját",
-                op_status_row_done: "Sor rögzítve!",
-                // Scan button texts
-                scan_row_text: "🖨️ Nyomtatási Sor Beolvasása",
+                op_status_pair_done: "Párosítás rögzítve!",
                 scan_op_text: "📷 Művelet Beolvasása",
                 scan_paint_text: "🎨 Festék Beolvasása",
-                // Row list
-                row_list_title: "Rögzített sorok:",
-                // Finish / interrupt
+                row_list_title: "Rögzített párosítások:",
                 finish_all_text: "✅ Összes Lezárása",
                 interrupt_text: "⏹️ Megszakítás",
-                alert_finish_all: "Összes sor lezárása és mentése?",
-                alert_all_saved: "Összes sor lezárva és mentve!",
-                alert_no_rows: "Még nincs rögzített sor!",
+                alert_finish_all: "Összes párosítás lezárása és mentése?",
+                alert_all_saved: "Összes párosítás lezárva és mentve!",
+                alert_no_rows: "Még nincs rögzített párosítás!",
                 alert_interrupt_confirm: "Munka megszakítása?\nKésőbb folytathatod ezen a gépen.",
                 alert_interrupted: "Munka megszakítva és mentve!",
-                // Row validation
-                alert_invalid_row: "Hibás nyomtatási sor kód! (számmal kell végződjön)",
-                // Operation validation
                 alert_invalid_operation: "Hibás művelet kód formátum!",
                 alert_operation_no_number: "A művelet kód utolsó 3 karaktere nem szám!",
-                // Paint validation
                 alert_invalid_paint: "Hibás festék QR kód formátum!",
                 alert_paint_expired: "Festék lejárt! (2+ év)", alert_paint_warning: "Festék hamarosan lejár! (1.5-2 év)",
                 alert_continue_pairing: "Folytatod a párosítást?",
-                // Common
                 alert_unknown_user: "Ismeretlen felhasználó!",
                 alert_logout_confirm: "Biztosan kijelentkezel?",
                 alert_save_error: "Mentési hiba!",
                 alert_finish_auftrag: "Megrendelés lezárása?", alert_auftrag_finished: "Megrendelés lezárva!",
                 alert_pause_ended: "Szünet befejezve! Időtartam:", alert_camera_error: "Kamera hiba!",
-                // Pause
                 pause_select_title: "Szünet típusa", pause_select_desc: "Válassz a szünet típusok közül:",
                 pause_type_eating: "Étkezési szünet", pause_type_paint: "Festékre várakozás",
                 pause_type_material: "Anyagra várakozás", pause_type_measure: "Mérésre várakozás",
                 cancel_text: "Mégse", pause_active_title: "Szünet aktív",
                 pause_timer_label: "Szünet ideje", end_pause_text: "▶️ Szünet Vége",
-                // Resume
                 resume_title: "Megszakított munka", resume_found: "Megszakított munka található!",
-                resume_rows_label: "Rögzített sorok", resume_elapsed_label: "Eltelt idő",
+                resume_rows_label: "Rögzített párosítások", resume_elapsed_label: "Eltelt idő",
                 resume_yes: "▶️ Folytatás", resume_no: "✖ Új munkával kezdés",
-                // Shift
                 shift_change_text: "🔄 Műszakváltás", shift_change_title: "Műszakváltás",
                 shift_change_desc: "Új operátor beolvasása",
                 shift_change_info: "A munka nem áll meg, csak az operátor vált.",
@@ -344,26 +328,21 @@
                 scan_auftrag_text: "📋 Scan Order", pause_text: "⏸️ Pause",
                 finish_auftrag_text: "✅ Finish Order", operation_title: "Operation Tracking",
                 back_text: "← Back", op_auftrag_label: "Order", op_operation_label: "Operation",
-                op_row_label: "Print row",
-                op_status_scan_row: "Scan print row",
-                op_status_scan_row_desc: "Scan the Code128 barcode of the print row",
                 op_status_scan_op: "Scan operation",
                 op_status_scan_op_desc: "Scan the Code128 barcode of the operation",
                 op_status_scan_paint: "Scan paint",
                 op_status_scan_paint_desc: "Scan the paint QR code",
-                op_status_row_done: "Row recorded!",
-                scan_row_text: "🖨️ Scan Print Row",
+                op_status_pair_done: "Pair recorded!",
                 scan_op_text: "📷 Scan Operation",
                 scan_paint_text: "🎨 Scan Paint",
-                row_list_title: "Recorded rows:",
+                row_list_title: "Recorded pairs:",
                 finish_all_text: "✅ Finish All",
                 interrupt_text: "⏹️ Interrupt",
-                alert_finish_all: "Finish and save all rows?",
-                alert_all_saved: "All rows finished and saved!",
-                alert_no_rows: "No rows recorded yet!",
+                alert_finish_all: "Finish and save all pairs?",
+                alert_all_saved: "All pairs finished and saved!",
+                alert_no_rows: "No pairs recorded yet!",
                 alert_interrupt_confirm: "Interrupt work?\nYou can resume later on this machine.",
                 alert_interrupted: "Work interrupted and saved!",
-                alert_invalid_row: "Invalid print row code! (must end with number)",
                 alert_invalid_operation: "Invalid operation code format!",
                 alert_operation_no_number: "Last 3 characters must be numbers!",
                 alert_invalid_paint: "Invalid paint QR code format!",
@@ -380,7 +359,7 @@
                 cancel_text: "Cancel", pause_active_title: "Pause active",
                 pause_timer_label: "Pause duration", end_pause_text: "▶️ End Pause",
                 resume_title: "Interrupted work", resume_found: "Interrupted work found!",
-                resume_rows_label: "Recorded rows", resume_elapsed_label: "Elapsed time",
+                resume_rows_label: "Recorded pairs", resume_elapsed_label: "Elapsed time",
                 resume_yes: "▶️ Resume", resume_no: "✖ Start new work",
                 shift_change_text: "🔄 Shift Change", shift_change_title: "Shift Change",
                 shift_change_desc: "Scan new operator",
@@ -398,26 +377,21 @@
                 scan_auftrag_text: "📋 Auftrag scannen", pause_text: "⏸️ Pause",
                 finish_auftrag_text: "✅ Auftrag abschließen", operation_title: "Vorgangserfassung",
                 back_text: "← Zurück", op_auftrag_label: "Auftrag", op_operation_label: "Vorgang",
-                op_row_label: "Druckreihe",
-                op_status_scan_row: "Druckreihe scannen",
-                op_status_scan_row_desc: "Scannen Sie den Code128-Barcode der Druckreihe",
                 op_status_scan_op: "Vorgang scannen",
                 op_status_scan_op_desc: "Scannen Sie den Code128-Barcode des Vorgangs",
                 op_status_scan_paint: "Farbe scannen",
                 op_status_scan_paint_desc: "Scannen Sie den Farb-QR-Code",
-                op_status_row_done: "Reihe erfasst!",
-                scan_row_text: "🖨️ Druckreihe scannen",
+                op_status_pair_done: "Zuordnung erfasst!",
                 scan_op_text: "📷 Vorgang scannen",
                 scan_paint_text: "🎨 Farbe scannen",
-                row_list_title: "Erfasste Reihen:",
+                row_list_title: "Erfasste Zuordnungen:",
                 finish_all_text: "✅ Alle abschließen",
                 interrupt_text: "⏹️ Unterbrechen",
-                alert_finish_all: "Alle Reihen abschließen und speichern?",
-                alert_all_saved: "Alle Reihen abgeschlossen und gespeichert!",
-                alert_no_rows: "Noch keine Reihen erfasst!",
+                alert_finish_all: "Alle Zuordnungen abschließen und speichern?",
+                alert_all_saved: "Alle Zuordnungen abgeschlossen und gespeichert!",
+                alert_no_rows: "Noch keine Zuordnungen erfasst!",
                 alert_interrupt_confirm: "Arbeit unterbrechen?\nSie können später an dieser Maschine fortfahren.",
                 alert_interrupted: "Arbeit unterbrochen und gespeichert!",
-                alert_invalid_row: "Ungültiger Druckreihe-Code! (muss mit Zahl enden)",
                 alert_invalid_operation: "Ungültiges Vorgangsformat!",
                 alert_operation_no_number: "Letzte 3 Zeichen müssen Zahlen sein!",
                 alert_invalid_paint: "Ungültiger Farb-QR-Code!",
@@ -434,7 +408,7 @@
                 cancel_text: "Abbrechen", pause_active_title: "Pause aktiv",
                 pause_timer_label: "Pausendauer", end_pause_text: "▶️ Pause beenden",
                 resume_title: "Unterbrochene Arbeit", resume_found: "Unterbrochene Arbeit gefunden!",
-                resume_rows_label: "Erfasste Reihen", resume_elapsed_label: "Verstrichene Zeit",
+                resume_rows_label: "Erfasste Zuordnungen", resume_elapsed_label: "Verstrichene Zeit",
                 resume_yes: "▶️ Fortsetzen", resume_no: "✖ Neue Arbeit beginnen",
                 shift_change_text: "🔄 Schichtwechsel", shift_change_title: "Schichtwechsel",
                 shift_change_desc: "Neuen Bediener scannen",
@@ -452,15 +426,11 @@
                 scan_auftrag_text: "📋 I-scan ang Order", pause_text: "⏸️ Pahinga",
                 finish_auftrag_text: "✅ Tapusin ang Order", operation_title: "Subaybay ng Operasyon",
                 back_text: "← Bumalik", op_auftrag_label: "Order", op_operation_label: "Operasyon",
-                op_row_label: "Print row",
-                op_status_scan_row: "I-scan ang print row",
-                op_status_scan_row_desc: "I-scan ang Code128 barcode ng print row",
                 op_status_scan_op: "I-scan ang operasyon",
                 op_status_scan_op_desc: "I-scan ang Code128 barcode ng operasyon",
                 op_status_scan_paint: "I-scan ang pintura",
                 op_status_scan_paint_desc: "I-scan ang QR code ng pintura",
-                op_status_row_done: "Row naitala!",
-                scan_row_text: "🖨️ I-scan ang Print Row",
+                op_status_pair_done: "Pair naitala!",
                 scan_op_text: "📷 I-scan ang Operasyon",
                 scan_paint_text: "🎨 I-scan ang Pintura",
                 row_list_title: "Mga naitala:",
@@ -471,7 +441,6 @@
                 alert_no_rows: "Wala pang naitala!",
                 alert_interrupt_confirm: "I-interrupt ang trabaho?\nMaaari mong ipagpatuloy mamaya.",
                 alert_interrupted: "Trabaho na-interrupt at na-save!",
-                alert_invalid_row: "Hindi wastong print row code!",
                 alert_invalid_operation: "Hindi wastong format!",
                 alert_operation_no_number: "Huling 3 ay dapat numero!",
                 alert_invalid_paint: "Hindi wastong QR code!",
@@ -536,7 +505,6 @@
             document.getElementById('langSelector').value = currentLanguage;
             const lsm = document.getElementById('langSelectorMain');
             if (lsm) lsm.value = currentLanguage;
-            // Update dynamic scan button text
             updateScanButton();
         }
 
@@ -556,11 +524,11 @@
         let resumeDocId = null;
         let operators = [];
 
-        // === NEW 3-STEP STATE MACHINE ===
-        // States: SCAN_ROW → SCAN_OPERATION → SCAN_PAINT → (row done) → SCAN_ROW → ...
+        // === 2-STEP STATE MACHINE ===
+        // States: SCAN_OPERATION → SCAN_PAINT → (pair done) → SCAN_OPERATION → ...
         let stepState = 'SCAN_OPERATION';
-        let currentOpData = null;    // { operation_code, operation_number, operation_seq }
-        let printRows = [];          // completed: [ {row_code, operation, paint, recorded_at}, ... ]
+        let currentOpData = null;
+        let printRows = []; // completed: [ {operation, paint, recorded_at}, ... ]
 
         const USERS = [
             { user_id: "USR001", name: "Ragó Attila", employee_number: "7939", qr_code: "Ragó Attila 7939", language: "hu" }
@@ -654,8 +622,7 @@
 
             // Go to operation screen
             document.getElementById('opAuftragValue').textContent = currentAuftrag;
-            stepState = 'SCAN_ROW';
-            currentRow = null;
+            stepState = 'SCAN_OPERATION';
             currentOpData = null;
             updateOperationUI();
 
@@ -795,11 +762,9 @@
                 startWorkTimer();
 
                 // Go to operation screen
-                stepState = 'SCAN_ROW';
-                currentRow = null;
+                stepState = 'SCAN_OPERATION';
                 currentOpData = null;
                 document.getElementById('opAuftragValue').textContent = currentAuftrag;
-                document.getElementById('opRowValue').textContent = '-';
                 document.getElementById('opOperationValue').textContent = '-';
                 updateOperationUI();
                 showScreen('operation-screen');
@@ -817,7 +782,7 @@
         function resetMainScreen() {
             currentAuftrag = null; printRows = []; operators = [];
             resumeDocId = null; elapsedBeforeResume = 0;
-            stepState = 'SCAN_ROW'; currentRow = null; currentOpData = null;
+            stepState = 'SCAN_OPERATION'; currentOpData = null;
             document.getElementById('auftragCard').style.display = 'none';
             document.getElementById('pauseBtn').style.display = 'none';
             document.getElementById('shiftChangeBtn').style.display = 'none';
@@ -826,28 +791,21 @@
         }
 
         // ==============================
-        // OPERATION SCREEN - 3-STEP FLOW
+        // OPERATION SCREEN - 2-STEP FLOW
         // ==============================
 
-        // Update the UI based on current stepState
         function updateOperationUI() {
             const statusEl = document.getElementById('operationStatus');
             const btnText = document.getElementById('scanStepBtnText');
             const finishBtn = document.getElementById('finishAllBtn');
             const interruptBtn = document.getElementById('interruptBtn');
 
-            if (stepState === 'SCAN_ROW') {
-                statusEl.innerHTML = `<div class="status-icon">🖨️</div><h3>${t('op_status_scan_row')}</h3><p>${t('op_status_scan_row_desc')}</p>`;
-                statusEl.className = 'status-box info';
-                btnText.textContent = t('scan_row_text');
-                btnText.removeAttribute('data-i18n');
-                document.getElementById('opRowValue').textContent = '-';
-                document.getElementById('opOperationValue').textContent = '-';
-            } else if (stepState === 'SCAN_OPERATION') {
+            if (stepState === 'SCAN_OPERATION') {
                 statusEl.innerHTML = `<div class="status-icon">📷</div><h3>${t('op_status_scan_op')}</h3><p>${t('op_status_scan_op_desc')}</p>`;
                 statusEl.className = 'status-box info';
                 btnText.textContent = t('scan_op_text');
                 btnText.removeAttribute('data-i18n');
+                document.getElementById('opOperationValue').textContent = '-';
             } else if (stepState === 'SCAN_PAINT') {
                 statusEl.innerHTML = `<div class="status-icon">🎨</div><h3>${t('op_status_scan_paint')}</h3><p>${t('op_status_scan_paint_desc')}</p>`;
                 statusEl.className = 'status-box info';
@@ -855,43 +813,28 @@
                 btnText.removeAttribute('data-i18n');
             }
 
-            // Show finish/interrupt buttons if there's at least 1 completed row
+            // Show finish button only when in SCAN_OPERATION state (no half-pair) and has rows
             const hasRows = printRows.length > 0;
-            finishBtn.style.display = (hasRows && stepState === 'SCAN_ROW') ? 'block' : 'none';
+            finishBtn.style.display = (hasRows && stepState === 'SCAN_OPERATION') ? 'block' : 'none';
             interruptBtn.style.display = hasRows ? 'block' : 'none';
         }
 
         function updateScanButton() {
             const btnText = document.getElementById('scanStepBtnText');
             if (!btnText) return;
-            if (stepState === 'SCAN_ROW') btnText.textContent = t('scan_row_text');
-            else if (stepState === 'SCAN_OPERATION') btnText.textContent = t('scan_op_text');
+            if (stepState === 'SCAN_OPERATION') btnText.textContent = t('scan_op_text');
             else if (stepState === 'SCAN_PAINT') btnText.textContent = t('scan_paint_text');
         }
 
         // Main scan button - context dependent
         document.getElementById('scanStepBtn').addEventListener('click', () => {
             startScanner('readerOperation', (code) => {
-                if (stepState === 'SCAN_ROW') handleRowScan(code);
-                else if (stepState === 'SCAN_OPERATION') handleOperationScan(code);
+                if (stepState === 'SCAN_OPERATION') handleOperationScan(code);
                 else if (stepState === 'SCAN_PAINT') handlePaintScan(code);
             });
         });
 
-        // STEP 1: Row scan
-        function handleRowScan(code) {
-            const trimmed = code.trim();
-            // Validate: must end with digits
-            const match = trimmed.match(/^(.+?)(\d+)$/);
-            if (!match) { alert(t('alert_invalid_row')); return; }
-
-            currentRow = { row_code: trimmed };
-            document.getElementById('opRowValue').textContent = trimmed;
-            stepState = 'SCAN_OPERATION';
-            updateOperationUI();
-        }
-
-        // STEP 2: Operation scan
+        // STEP 1: Operation scan
         function handleOperationScan(code) {
             const trimmed = code.trim();
             if (trimmed.length < 3) { alert(t('alert_invalid_operation')); return; }
@@ -908,7 +851,7 @@
             updateOperationUI();
         }
 
-        // STEP 3: Paint scan → completes the row
+        // STEP 2: Paint scan → completes the pair
         function handlePaintScan(code) {
             const p = code.trim().split('|');
             if (p.length < 5) { alert(t('alert_invalid_paint')); return; }
@@ -924,9 +867,8 @@
                 expired_status: st, expired_message: msg, age_years: age.toFixed(1)
             };
 
-            // Complete this row
+            // Complete this pair
             printRows.push({
-                row_code: currentRow.row_code,
                 operation: { ...currentOpData },
                 paint: paintData,
                 recorded_at: new Date().toISOString()
@@ -934,21 +876,20 @@
 
             // Show success briefly
             const statusEl = document.getElementById('operationStatus');
-            statusEl.innerHTML = `<div class="status-icon">✅</div><h3>${t('op_status_row_done')}</h3><p>${currentRow.row_code} → ${currentOpData.operation_number}-${currentOpData.operation_seq} → ${paintData.paint_id}</p>`;
+            statusEl.innerHTML = `<div class="status-icon">✅</div><h3>${t('op_status_pair_done')}</h3><p>${currentOpData.operation_number}-${currentOpData.operation_seq} → ${paintData.paint_id}</p>`;
             statusEl.className = 'status-box success';
 
             renderRowList();
 
-            // Reset for next row
-            currentRow = null;
+            // Reset for next pair
             currentOpData = null;
-            stepState = 'SCAN_ROW';
+            stepState = 'SCAN_OPERATION';
 
             // Delay UI update so user sees the success
             setTimeout(() => { updateOperationUI(); }, 1500);
         }
 
-        // Render completed rows list
+        // Render completed pairs list
         function renderRowList() {
             const container = document.getElementById('rowListContainer');
             const list = document.getElementById('rowList');
@@ -968,11 +909,11 @@
 
                 d.innerHTML = `
                     <div class="header" style="background:none;color:#333;padding:0;">
-                        <div class="paint-id">#${idx + 1} — ${row.row_code}</div>
+                        <div class="paint-id">#${idx + 1} — ${row.operation.operation_number}-${row.operation.operation_seq}</div>
                         <div class="time">${tm}</div>
                     </div>
                     <div class="details">
-                        <strong>Művelet:</strong> ${row.operation.operation_number}-${row.operation.operation_seq}<br>
+                        <strong>Művelet kód:</strong> ${row.operation.operation_code}<br>
                         <strong>Festék:</strong> ${row.paint.paint_id} — ${row.paint.color} (${row.paint.series})<br>
                         Keverte: ${row.paint.mixed_by} | ${row.paint.mixed_date} (${row.paint.age_years} év)
                     </div>
@@ -1078,15 +1019,13 @@
 
         function resetOperationScreen() {
             printRows = [];
-            stepState = 'SCAN_ROW';
-            currentRow = null;
+            stepState = 'SCAN_OPERATION';
             currentOpData = null;
             resumeDocId = null;
             document.getElementById('rowListContainer').style.display = 'none';
             document.getElementById('finishAllBtn').style.display = 'none';
             document.getElementById('interruptBtn').style.display = 'none';
             document.getElementById('opAuftragValue').textContent = '-';
-            document.getElementById('opRowValue').textContent = '-';
             document.getElementById('opOperationValue').textContent = '-';
         }
 
