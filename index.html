@@ -128,8 +128,6 @@
                 <div class="info-card">
                     <div class="label" data-i18n="op_auftrag_label">Megrendelés</div>
                     <div class="value" id="opAuftragValue">-</div>
-                    <div class="label" data-i18n="op_row_label">Nyomtatási sor</div>
-                    <div class="value" id="opRowValue">-</div>
                     <div class="label" data-i18n="op_operation_label">Művelet</div>
                     <div class="value" id="opOperationValue">-</div>
                 </div>
@@ -560,8 +558,7 @@
 
         // === NEW 3-STEP STATE MACHINE ===
         // States: SCAN_ROW → SCAN_OPERATION → SCAN_PAINT → (row done) → SCAN_ROW → ...
-        let stepState = 'SCAN_ROW';
-        let currentRow = null;       // { row_code: "ABC001" }
+        let stepState = 'SCAN_OPERATION';
         let currentOpData = null;    // { operation_code, operation_number, operation_seq }
         let printRows = [];          // completed: [ {row_code, operation, paint, recorded_at}, ... ]
 
