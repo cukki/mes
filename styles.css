@@ -1,0 +1,393 @@
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, button, input, select {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .lang-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+#reader, #readerMain, #readerOperation, #readerShift {
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    display: none;
+}
+
+#reader.active, #readerMain.active, #readerOperation.active, #readerShift.active {
+    display: block;
+}
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.1);
+            margin-top: 10px;
+            border-radius: 10px;
+        }
+
+        .user-info .name {
+            font-weight: 600;
+        }
+
+        .user-info .number {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .login-content {
+            text-align: center;
+            padding: 60px 30px;
+        }
+
+        .login-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .login-content h2 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .login-content p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        button:not(.lang-selector):not(.logout-btn):not(.pause-type-btn) {
+            width: 100%;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+.btn-info {
+    background: #5AC8FA;
+    color: white;
+}
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-success {
+            background: #34C759;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #FF9500;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #FF3B30;
+            color: white;
+        }
+
+        #reader, #readerMain, #readerOperation {
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        #reader.active, #readerMain.active, #readerOperation.active {
+            display: block;
+        }
+
+        .status-box {
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .status-box.success {
+            background: #d4f4dd;
+            color: #1e7e34;
+        }
+
+        .status-box.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-box.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-box.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .status-box h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .status-box p {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .info-card .label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .info-card .value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .info-card .value:last-child {
+            margin-bottom: 0;
+        }
+
+        .timer-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .timer-display .label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .timer-display .time {
+            font-size: 48px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .pause-types {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .pause-type-btn {
+            padding: 30px 20px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            width: 100%;
+        }
+
+        .pause-type-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .pause-type-btn .icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .pause-type-btn .text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .paint-list {
+            margin-bottom: 20px;
+        }
+
+        .paint-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #34C759;
+        }
+
+        .paint-item.expired {
+            border-left-color: #FF3B30;
+        }
+
+        .paint-item.warning {
+            border-left-color: #FF9500;
+        }
+
+        .paint-item .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .paint-item .paint-id {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .paint-item .time {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .paint-item .details {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .paint-item .warning-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .paint-item .warning-badge.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .paint-item .warning-badge.expired {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .timer-display .time {
+                font-size: 36px;
+            }
+
+            .pause-types {
+                grid-template-columns: 1fr;
+            }
+        }
