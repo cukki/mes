@@ -529,6 +529,7 @@
         let stepState = 'SCAN_OPERATION';
         let currentOpData = null;
         let printRows = []; // completed: [ {operation, paint, recorded_at}, ... ]
+        let operationPauses = [];
 
         const USERS = [
             { user_id: "USR001", name: "Ragó Attila", employee_number: "7939", qr_code: "Ragó Attila 7939", language: "hu" }
@@ -606,6 +607,7 @@
             currentAuftrag = data.auftrag_id;
             printRows = data.print_rows || [];
             operators = data.operators || [];
+            operationPauses = data.pauses || [];
             addOperatorEntry();
 
             // Show main with auftrag
@@ -781,6 +783,7 @@
 
         function resetMainScreen() {
             currentAuftrag = null; printRows = []; operators = [];
+            operationPauses = [];
             resumeDocId = null; elapsedBeforeResume = 0;
             stepState = 'SCAN_OPERATION'; currentOpData = null;
             document.getElementById('auftragCard').style.display = 'none';
@@ -940,6 +943,7 @@
                         {
                             status: 1,
                             print_rows: printRows,
+                            pauses: operationPauses,
                             operators: operators,
                             end_time: new Date().toISOString(),
                             elapsed_seconds: elapsed,
@@ -953,6 +957,7 @@
                         user_name: currentUser.name,
                         auftrag_id: currentAuftrag,
                         print_rows: printRows,
+                        pauses: operationPauses,
                         operators: operators,
                         start_time: new Date().toISOString(),
                         end_time: new Date().toISOString(),
@@ -986,6 +991,7 @@
                         {
                             status: 0,
                             print_rows: printRows,
+                            pauses: operationPauses,
                             operators: operators,
                             interrupted_at: new Date().toISOString(),
                             elapsed_seconds: elapsed
@@ -998,6 +1004,7 @@
                         user_name: currentUser.name,
                         auftrag_id: currentAuftrag,
                         print_rows: printRows,
+                        pauses: operationPauses,
                         operators: operators,
                         start_time: new Date().toISOString(),
                         interrupted_at: new Date().toISOString(),
@@ -1019,6 +1026,7 @@
 
         function resetOperationScreen() {
             printRows = [];
+            operationPauses = [];
             stepState = 'SCAN_OPERATION';
             currentOpData = null;
             resumeDocId = null;
@@ -1052,17 +1060,17 @@
 
         document.getElementById('cancelPauseSelect').addEventListener('click', () => showScreen('main-screen'));
 
-        document.getElementById('endPauseBtn').addEventListener('click', async () => {
+        document.getElementById('endPauseBtn').addEventListener('click', () => {
             const dur = Math.round((Date.now() - pauseStartTime) / 1000);
             clearInterval(pauseInterval);
-            try {
-                await window.addDoc(window.collection(window.db, 'pauses'), {
-                    machine_id: MACHINE_ID,
-                    user_id: currentUser.user_id, user_name: currentUser.name, auftrag_id: currentAuftrag,
-                    pause_type: pauseType, start_time: new Date(pauseStartTime).toISOString(),
-                    end_time: new Date().toISOString(), duration: dur
-                });
-            } catch (err) { console.error('Pause save error:', err); }
+
+            operationPauses.push({
+                pause_type: pauseType,
+                user_name: currentUser.name,
+                start_time: new Date(pauseStartTime).toISOString(),
+                end_time: new Date().toISOString(),
+                duration: dur
+            });
 
             elapsedBeforeResume = (Date.now() - workStartTime) + elapsedBeforeResume - (dur * 1000);
             workStartTime = Date.now();
