@@ -531,9 +531,18 @@
         let printRows = []; // completed: [ {operation, paint, recorded_at}, ... ]
         let operationPauses = [];
 
-        const USERS = [
-            { user_id: "USR001", name: "Ragó Attila", employee_number: "7939", qr_code: "Ragó Attila 7939", language: "hu" }
-        ];
+let USERS = [];
+
+async function loadUsers() {
+    try {
+        const res = await fetch('https://raw.githubusercontent.com/cukki/mes/main/users.json');
+        USERS = await res.json();
+        console.log('👥 Users loaded:', USERS.length);
+    } catch (err) {
+        console.error('Error loading users:', err);
+        USERS = [];
+    }
+}
 
         // ==============================
         // SESSION
